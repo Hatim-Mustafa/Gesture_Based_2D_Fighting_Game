@@ -17,7 +17,6 @@ private:
     float jumpDuration = 0.5f;
     float jumpTimeElapsed;
 	float jumpDistance = 150.f; // Total distance to jump (adjust as needed)
-
 public:
     Sprite characterSprite;
     Texture charTexture;
@@ -68,7 +67,7 @@ public:
             jumpTimeElapsed += dt;
 			if (getPosition().y < (screenHeight-height)) {
 				// Simulate gravity (simple linear fall)
-				move(Vector2f(0, jumpDistance * dt / jumpDuration)); 
+				move(Vector2f(0, jumpDistance * dt / (jumpDuration - jumpTimeElapsed)));
 			}
             else {
                 jumping = false;
@@ -77,13 +76,15 @@ public:
         }
         else {
             jumpTimeElapsed += dt;
-            if (jumpTimeElapsed < jumpDuration) {
+            if (getPosition().y > (screenHeight - height - jumpDistance)) {
                 // Simulate gravity (simple linear fall)
-                move(Vector2f(0, -jumpDistance * dt / jumpDuration));  
+                move(Vector2f(0, -jumpDistance * dt / (jumpDuration - jumpTimeElapsed)));  
             }
             else {
-                jumping = true;
-                jumpTimeElapsed = 0;
+                if (jumpTimeElapsed >= jumpDuration) {
+                    jumping = true;
+                    jumpTimeElapsed = 0;
+                }
             }
         }
     }
