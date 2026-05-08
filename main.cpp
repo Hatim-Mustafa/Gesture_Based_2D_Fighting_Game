@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <stdio.h>
+#include <iostream>
 using namespace sf;
 using namespace std;
 
@@ -11,24 +12,38 @@ using namespace std;
 //Character Class
 class Character {
 private:
-	sf::RectangleShape shape;
+	RectangleShape shape;
     bool jumping;
     float jumpDuration = 0.5f;
     float jumpTimeElapsed;
 	float jumpDistance = 150.f; // Total distance to jump (adjust as needed)
+
 public:
+    Sprite characterSprite;
+    Texture charTexture;
     Character() {
-        shape.setSize(sf::Vector2f(hamza2k21, height));
-        shape.setFillColor(sf::Color::Blue);
-        shape.setPosition(200.f, screenHeight-height);
+        //shape.setSize(sf::Vector2f(hamza2k21, height));
+        //shape.setFillColor(sf::Color::Blue);
+        //shape.setPosition(200.f, screenHeight-height);
+        if (!charTexture.loadFromFile("E:/Downloads (E version cuz C IS SMOL AF)/animatedredenemy.png")) {
+
+			cout << "tu pagal hai gawar" << endl;
+        }
+        characterSprite.setTexture(charTexture);
+        characterSprite.setPosition(200.f, screenHeight - height);
+        characterSprite.setTextureRect(IntRect(0, 0, 64, 64));
+        //characterSprite.setScale(2.0f, 2.0f);
+
 		jumping = false;
         jumpTimeElapsed = 0;
     }
     void move(const sf::Vector2f& velocity) {
-        shape.move(velocity);
+		characterSprite.move(velocity);
+        // shape.move(velocity);
     }
     void draw(sf::RenderWindow& window) {
-        window.draw(shape);
+		window.draw(characterSprite);
+        //window.draw(shape);
     }
 
 	void handleInput(String action, float dt) {
@@ -84,10 +99,18 @@ int main() {
 
     Character c1;
     Clock clock;
+    int currentFrame = 0;
 
     while (window.isOpen()) {
         Event event;
         float dt = clock.restart().asSeconds();
+
+        if (clock.getElapsedTime().asMilliseconds() > 100) {  // Change frame every 100ms
+            currentFrame = (currentFrame + 1) % 7;  // Cycle through 7 frames
+            c1.characterSprite.setTextureRect(IntRect(currentFrame * 64, 0, 64, 64));
+            clock.restart();
+        }
+
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
