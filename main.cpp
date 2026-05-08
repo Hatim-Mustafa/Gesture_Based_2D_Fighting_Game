@@ -13,16 +13,15 @@ class Character {
 private:
 	sf::RectangleShape shape;
     bool jumping;
-    float jumpDuration;
+    float jumpDuration = 0.5f;
     float jumpTimeElapsed;
-	float jumpDistance = 60.f; // Total distance to jump (adjust as needed)
+	float jumpDistance = 150.f; // Total distance to jump (adjust as needed)
 public:
     Character() {
         shape.setSize(sf::Vector2f(motapa, height));
         shape.setFillColor(sf::Color::Blue);
         shape.setPosition(200.f, screenHeight-height);
 		jumping = false;
-		jumpDuration = 0.25f;
         jumpTimeElapsed = 0;
     }
     void move(const sf::Vector2f& velocity) {
@@ -34,10 +33,10 @@ public:
 
 	void handleInput(String action, float dt) {
 		if (action == "left") {
-			move(Vector2f(-10.f, 0));
+			move(Vector2f(-50.f, 0));
 		}
 		else if (action == "right") {
-			move(Vector2f(10.f, 0));
+			move(Vector2f(50.f, 0));
 		}
 		else if (action == "jump") {
 			handleJump(dt);
