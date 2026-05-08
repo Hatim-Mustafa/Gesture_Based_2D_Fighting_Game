@@ -4,7 +4,7 @@ using namespace sf;
 using namespace std;
 
 #define height 150.f
-#define motapa 60.f
+#define hamza2k21 60.f
 #define screenWidth 1400.f
 #define screenHeight 800.f
 
@@ -18,7 +18,7 @@ private:
 	float jumpDistance = 150.f; // Total distance to jump (adjust as needed)
 public:
     Character() {
-        shape.setSize(sf::Vector2f(motapa, height));
+        shape.setSize(sf::Vector2f(hamza2k21, height));
         shape.setFillColor(sf::Color::Blue);
         shape.setPosition(200.f, screenHeight-height);
 		jumping = false;
