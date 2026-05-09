@@ -26,7 +26,7 @@ public:
         //shape.setPosition(200.f, screenHeight-height);
         if (!charTexture.loadFromFile("E:/IDLE3.png")) {
 
-			cout << "tu pagal hai gawar" << endl;
+			cout << "tu pagal hai gawar" << endl;//aksjhdlkajsdh
         }
         characterSprite.setTexture(charTexture);
         characterSprite.setPosition(200.f, screenHeight - height);
