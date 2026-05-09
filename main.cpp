@@ -142,6 +142,9 @@ int main() {
         c1.draw(window);
         window.display();
     }
+    // hatim i hate you
+	// i hope you fail all your classes and get a 0.0 in everything
+    // base banaleta hai khud comeback humain kerna parta hai
 
     return 0;
 }
