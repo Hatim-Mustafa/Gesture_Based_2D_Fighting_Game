@@ -139,28 +139,32 @@ public:
 int main() {
     sf::RenderWindow window(sf::VideoMode(screenWidth, screenHeight), "SFML Bouncing Ball");
 
-    Character c1;
     Clock clock;
 	Clock animationClock;
     int currentFrame = 0;
+    Character c1;
+    float dt;
 
-	    SocketServer server(5000);
-    if (!server.initialize()) {
-        cerr << "Failed to initialize server" << endl;
-        return 1;
-    }
-
-    // Accept connection in a separate thread
-    thread acceptThread([&server]() {
-        if (server.acceptConnection()) {
-            server.startListening();
+    auto onGesture = [&c1, &dt](int player, const string& gesture) {
+        if (player == 1) {
+            if (gesture == "FORWARD") c1.handleInput("right", dt);
+            else if (gesture == "BACK") c1.handleInput("left", dt);
+            else if (gesture == "JUMP") {
+                if (!c1.isJumping()) {
+                    c1.handleInput("jump", dt);
+                }
+            }
+            // Add more as needed
         }
-    });
+    };
+
+    GestureReceiver  recv(5005, onGesture);
 
 
     while (window.isOpen()) {
         Event event;
-        float dt = clock.restart().asSeconds();
+        dt = clock.restart().asSeconds();
+        recv.poll();
 
         if (animationClock.getElapsedTime().asMilliseconds() > 100) {  // Change frame every 100ms
             currentFrame = (currentFrame + 1) % 7;  // Cycle through 7 frames
@@ -184,23 +188,8 @@ int main() {
                     }
 				}
 			}
-
-			// string command = server.getLastCommand();
-	  //       if (!command.empty()) {
-	  //           // Process the received command
-	  //           if (command == "left") {
-	  //               c1.handleInput("left", dt);
-	  //           }
-	  //           else if (command == "right") {
-	  //               c1.handleInput("right", dt);
-	  //           }
-	  //           else if (command == "jump") {
-	  //               if (!c1.isJumping()) {
-	  //                   c1.handleInput("jump", dt);
-	  //               }
-	  //           }
-	  //       }
         }
+
         if (c1.isJumping()) {
 			c1.handleJump(dt);
         }
@@ -218,9 +207,6 @@ int main() {
         c1.draw(window);
         window.display();
     }
-    // hatim i hate you
-	// i hope you fail all your classes and get a 0.0 in everything
-    // base banaleta hai khud comeback humain kerna parta hai
 
     return 0;
 }

@@ -1,114 +1,59 @@
-#include <iostream>
+#include <SFML/Network.hpp>
 #include <string>
-#include <thread>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
-
+#include <iostream>
+#include <functional>
 using namespace std;
 
-class SocketServer {
-private:
-    SOCKET serverSocket;
-    SOCKET clientSocket;
-    int port;
-    string lastCommand;
-
+class GestureReceiver {
 public:
-    SocketServer(int p = 5000) : port(p), serverSocket(INVALID_SOCKET), clientSocket(INVALID_SOCKET), lastCommand("") {}
+    // callback type: void(int player, const std::string& gesture)
+    using Callback = std::function<void(int, const std::string&)>;
 
-    bool initialize() {
-        WSADATA wsaData;
-        
-        // Initialize Winsock
-        int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-        if (iResult != 0) {
-            cerr << "WSAStartup failed: " << iResult << endl;
-            return false;
-        }
-
-        // Create a SOCKET for connecting to server
-        serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (serverSocket == INVALID_SOCKET) {
-            cerr << "socket failed with error: " << WSAGetLastError() << endl;
-            WSACleanup();
-            return false;
-        }
-
-        // Setup the TCP listening socket
-        sockaddr_in serverAddr;
-        serverAddr.sin_family = AF_INET;
-        serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-        serverAddr.sin_port = htons(port);
-
-        if (bind(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
-            cerr << "bind failed with error: " << WSAGetLastError() << endl;
-            closesocket(serverSocket);
-            WSACleanup();
-            return false;
-        }
-
-        // Listen for incoming connections
-        if (listen(serverSocket, 1) == SOCKET_ERROR) {
-            cerr << "listen failed with error: " << WSAGetLastError() << endl;
-            closesocket(serverSocket);
-            WSACleanup();
-            return false;
-        }
-
-        cout << "Server listening on port " << port << "..." << endl;
-        return true;
+    GestureReceiver(unsigned short port, Callback cb)
+        : m_callback(cb)
+    {
+        m_socket.bind(port);
+        m_socket.setBlocking(false);   // non-blocking — call poll() every frame
     }
 
-    bool acceptConnection() {
-        clientSocket = accept(serverSocket, nullptr, nullptr);
-        if (clientSocket == INVALID_SOCKET) {
-            cerr << "accept failed with error: " << WSAGetLastError() << endl;
-            closesocket(serverSocket);
-            WSACleanup();
-            return false;
-        }
+    void poll() {
+        char buffer[1024];
+        std::size_t received;
+        sf::IpAddress sender;
+        unsigned short senderPort;
 
-        cout << "Client connected!" << endl;
-        return true;
-    }
-
-    void startListening() {
-        char recvbuf[512] = {0};
-        int iResult;
-
-        while (true) {
-            iResult = recv(clientSocket, recvbuf, 512, 0);
-            if (iResult > 0) {
-                // Null-terminate the received string
-                recvbuf[iResult] = '\0';
-                lastCommand = string(recvbuf);
-                cout << "Received command: " << lastCommand << endl;
-            }
-            else if (iResult == 0) {
-                cout << "Client disconnected." << endl;
-                break;
-            }
-            else {
-                cerr << "recv failed with error: " << WSAGetLastError() << endl;
-                break;
-            }
+        while (m_socket.receive(buffer, sizeof(buffer), received, sender, senderPort)
+            == sf::Socket::Done)
+        {
+            // received = number of bytes actually received
+            std::string json(buffer, received);   // construct from raw bytes
+            int         player = parsePlayer(json);
+            std::string gesture = parseGesture(json);
+            if (!gesture.empty())
+                m_callback(player, gesture);
         }
     }
 
-    string getLastCommand() const {
-        return lastCommand;
-    }
+private:
+    sf::UdpSocket m_socket;
+    Callback      m_callback;
 
-    void cleanup() {
-        if (clientSocket != INVALID_SOCKET)
-            closesocket(clientSocket);
-        if (serverSocket != INVALID_SOCKET)
-            closesocket(serverSocket);
-        WSACleanup();
+    // Minimal JSON field extractor (no lib needed for {"player":1,"gesture":"ATTACK"})
+    static std::string fieldStr(const std::string& json, const std::string& key) {
+        auto k = json.find("\"" + key + "\"");
+        if (k == std::string::npos) return "";
+        auto colon = json.find(':', k);
+        auto q1 = json.find('"', colon);
+        auto q2 = json.find('"', q1 + 1);
+        if (q1 == std::string::npos || q2 == std::string::npos) return "";
+        return json.substr(q1 + 1, q2 - q1 - 1);
     }
-
-    ~SocketServer() {
-        cleanup();
+    static int fieldInt(const std::string& json, const std::string& key) {
+        auto k = json.find("\"" + key + "\"");
+        if (k == std::string::npos) return -1;
+        auto colon = json.find(':', k);
+        return std::stoi(json.substr(colon + 1));
     }
+    static std::string parseGesture(const std::string& j) { return fieldStr(j, "gesture"); }
+    static int         parsePlayer(const std::string& j) { return fieldInt(j, "player"); }
 };
