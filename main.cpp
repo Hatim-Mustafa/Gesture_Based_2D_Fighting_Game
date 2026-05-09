@@ -10,7 +10,6 @@ using namespace std;
 #define screenHeight 800.f
 
 //Character Class
-//He He
 class Character {
 private:
 	RectangleShape shape;
