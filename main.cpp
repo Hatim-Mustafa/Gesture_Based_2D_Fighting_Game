@@ -4,7 +4,7 @@
 using namespace sf;
 using namespace std;
 
-#define height 150.f
+#define height 210.f
 #define hamza2k21 60.f
 #define screenWidth 1400.f
 #define screenHeight 800.f
@@ -16,7 +16,12 @@ private:
     bool jumping;
     float jumpDuration = 0.5f;
     float jumpTimeElapsed;
-	float jumpDistance = 150.f; // Total distance to jump (adjust as needed)
+	float jumpDistance = 150.f;
+    float moveDistance = 60.f;
+    float moveDuration = 0.25f;
+	float moveTimeElapsed;
+    bool movingLeft;
+	bool movingRight;
     string texturePath = "with_outline/IDLE.png";
 public:
     Sprite characterSprite;
@@ -28,11 +33,14 @@ public:
         charTexture.loadFromFile(texturePath);
         characterSprite.setTexture(charTexture);
         characterSprite.setPosition(200.f, screenHeight - height);
-        characterSprite.setTextureRect(IntRect(0, 0, 65, 64));
-        characterSprite.setScale(2.0f, 2.0f);
+        characterSprite.setTextureRect(IntRect(0, 0, 64, 64));
+        characterSprite.setScale(3.0f, 3.0f);
 
 		jumping = false;
         jumpTimeElapsed = 0;
+		movingLeft = false;
+		movingRight = false;
+		moveTimeElapsed = 0;
     }
     void move(const sf::Vector2f& velocity) {
 		characterSprite.move(velocity);
@@ -45,10 +53,20 @@ public:
 
 	void handleInput(String action, float dt) {
 		if (action == "left") {
-			move(Vector2f(-50.f, 0));
+            if (isMoving()) {
+				moveTimeElapsed = 0;  // Reset move time to allow immediate direction change
+            }
+			movingLeft = true;
+			movingRight = false;  // Stop moving right if currently moving
+			handleMove(dt);
 		}
 		else if (action == "right") {
-			move(Vector2f(50.f, 0));
+            if (isMoving()) {
+                moveTimeElapsed = 0;  // Reset move time to allow immediate direction change
+            }
+			movingRight = true;
+			movingLeft = false;  // Stop moving left if currently moving
+			handleMove(dt);
 		}
 		else if (action == "jump") {
 			handleJump(dt);
@@ -59,15 +77,38 @@ public:
 		return jumping;
 	}
 
+	bool isMoving() {
+		return movingLeft || movingRight;
+	}
+
+    void handleMove(float dt) {
+		if (movingLeft) {
+			move(Vector2f(-moveDistance * dt / moveDuration, 0));
+			moveTimeElapsed += dt;
+			if (moveTimeElapsed >= moveDuration) {
+				movingLeft = false;
+				moveTimeElapsed = 0;
+			}
+		}
+		else if (movingRight) {
+			move(Vector2f(moveDistance * dt / moveDuration, 0));
+			moveTimeElapsed += dt;
+			if (moveTimeElapsed >= moveDuration) {
+				movingRight = false;
+				moveTimeElapsed = 0;
+			}
+		}
+    }
+
 	//once jump is initiated, use time to simulate gravity and bring character back down
     void handleJump(float dt) {
         if (jumping) {
             jumpTimeElapsed += dt;
 			if (getPosition().y < (screenHeight-height)) {
-				// Simulate gravity (simple linear fall)
 				move(Vector2f(0, jumpDistance * dt / (jumpDuration - jumpTimeElapsed)));
 			}
             else {
+				move(Vector2f(0, screenHeight - height - getPosition().y));
                 jumping = false;
                 jumpTimeElapsed = 0;
             }
@@ -75,8 +116,7 @@ public:
         else {
             jumpTimeElapsed += dt;
             if (getPosition().y > (screenHeight - height - jumpDistance)) {
-                // Simulate gravity (simple linear fall)
-                move(Vector2f(0, -jumpDistance * dt / (jumpDuration - jumpTimeElapsed)));  
+                move(Vector2f(0, -jumpDistance * dt / (jumpDuration - jumpTimeElapsed)));
             }
             else {
                 if (jumpTimeElapsed >= jumpDuration) {
@@ -89,7 +129,6 @@ public:
 
 	Vector2f getPosition() {
 		Vector2f pos = characterSprite.getPosition();
-        //Vector2f pos = shape.getPosition();
         return pos;
 	}
 };
@@ -120,7 +159,7 @@ int main() {
 					c1.handleInput("left", dt);
                 }
                 else if (event.key.code == sf::Keyboard::Right) {
-					c1.handleInput("right", dt);
+                    c1.handleInput("right", dt);
                 }
                 else if (event.key.code == sf::Keyboard::Up) {
                     if (!c1.isJumping()) {
@@ -136,6 +175,10 @@ int main() {
 		{
 			c1.handleJump(dt);
 		}
+        
+        if (c1.isMoving()) {
+            c1.handleMove(dt);
+        }
 
         
         window.clear(sf::Color::Black);
