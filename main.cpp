@@ -28,8 +28,8 @@ public:
         charTexture.loadFromFile(texturePath);
         characterSprite.setTexture(charTexture);
         characterSprite.setPosition(200.f, screenHeight - height);
-        characterSprite.setTextureRect(IntRect(0, 0, 64, 64));
-        //characterSprite.setScale(2.0f, 2.0f);
+        characterSprite.setTextureRect(IntRect(0, 0, 65, 64));
+        characterSprite.setScale(2.0f, 2.0f);
 
 		jumping = false;
         jumpTimeElapsed = 0;
@@ -89,6 +89,7 @@ public:
 
 	Vector2f getPosition() {
 		Vector2f pos = characterSprite.getPosition();
+        //Vector2f pos = shape.getPosition();
         return pos;
 	}
 };
@@ -98,16 +99,17 @@ int main() {
 
     Character c1;
     Clock clock;
+	Clock animationClock;
     int currentFrame = 0;
 
     while (window.isOpen()) {
         Event event;
         float dt = clock.restart().asSeconds();
 
-        if (clock.getElapsedTime().asMilliseconds() > 100) {  // Change frame every 100ms
+        if (animationClock.getElapsedTime().asMilliseconds() > 100) {  // Change frame every 100ms
             currentFrame = (currentFrame + 1) % 7;  // Cycle through 7 frames
-            c1.characterSprite.setTextureRect(IntRect(currentFrame * 64, 0, 64, 64));
-            clock.restart();
+            c1.characterSprite.setTextureRect(IntRect(currentFrame * 96, 0, 34, 64));
+            animationClock.restart();
         }
 
         while (window.pollEvent(event)) {
