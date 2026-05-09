@@ -1,6 +1,9 @@
 #include <SFML/Graphics.hpp>
 #include <stdio.h>
 #include <iostream>
+#include <thread>
+#include <mutex>
+#include "socket_server.cpp" 
 using namespace sf;
 using namespace std;
 
@@ -141,6 +144,20 @@ int main() {
 	Clock animationClock;
     int currentFrame = 0;
 
+	    SocketServer server(5000);
+    if (!server.initialize()) {
+        cerr << "Failed to initialize server" << endl;
+        return 1;
+    }
+
+    // Accept connection in a separate thread
+    thread acceptThread([&server]() {
+        if (server.acceptConnection()) {
+            server.startListening();
+        }
+    });
+
+
     while (window.isOpen()) {
         Event event;
         float dt = clock.restart().asSeconds();
@@ -167,6 +184,22 @@ int main() {
                     }
 				}
 			}
+
+			// string command = server.getLastCommand();
+	  //       if (!command.empty()) {
+	  //           // Process the received command
+	  //           if (command == "left") {
+	  //               c1.handleInput("left", dt);
+	  //           }
+	  //           else if (command == "right") {
+	  //               c1.handleInput("right", dt);
+	  //           }
+	  //           else if (command == "jump") {
+	  //               if (!c1.isJumping()) {
+	  //                   c1.handleInput("jump", dt);
+	  //               }
+	  //           }
+	  //       }
         }
         if (c1.isJumping()) {
 			c1.handleJump(dt);
