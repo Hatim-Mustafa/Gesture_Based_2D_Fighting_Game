@@ -1,0 +1,25 @@
+[33mb37cd06[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m sprite movement done
+[33m02b2a02[m new comments
+[33mc6353c2[m fixing configuration issues
+[33mc8c3f42[m testing 4.0
+[33m0b82c58[m testing 3.0
+[33mabac940[m Update .gitignore to include vcxproj files
+[33m03bf350[m testing 2.0
+[33ma25c501[m testing configuration
+[33m72b970b[m Update .gitignore to include build and IDE files
+[33m88aa098[m Merge pull request #2 from Hatim-Mustafa/zaid
+[33m6252f5e[m Merge branch 'master' into zaid
+[33md9dd86c[m test
+[33m0aa101e[m Merge pull request #1 from Hatim-Mustafa/Hatim's-branch
+[33m8119383[m[33m ([m[1;31morigin/Hatim's-branch[m[33m)[m Merge branch 'master' into Hatim's-branch
+[33m2f795de[m psprite addtion 3
+[33m56f782a[m pushed to personal branch
+[33me735731[m sprite addition 2
+[33m3a3ef8d[m sprite addition
+[33mf4260e3[m jump more smooth
+[33m377c624[m Merge branch 'master' of https://github.com/Hatim-Mustafa/Gesture_Based_2D_Fighting_Game
+[33m566c407[m changed sizes etc
+[33macb8fff[m Rename motapa to hamza2k21 in main.cpp
+[33m1e0dabc[m Basic jump and movement done
+[33mdfff625[m Add project files.
+[33m6028b16[m Add .gitattributes, .gitignore, and README.md.
