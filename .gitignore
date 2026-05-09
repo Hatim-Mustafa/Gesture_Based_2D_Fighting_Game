@@ -363,7 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 .vs/
-*.vcxproj.user
+*.vcxproj
 Debug/
 Release/
 x64/
