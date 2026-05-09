@@ -7,7 +7,7 @@
 using namespace sf;
 using namespace std;
 
-#define height 210.f
+#define height 250.f
 #define hamza2k21 60.f
 #define screenWidth 1400.f
 #define screenHeight 800.f
@@ -23,17 +23,24 @@ private:
     float moveDistance = 60.f;
     float moveDuration = 0.25f;
 	float moveTimeElapsed;
-    bool movingLeft;
-	bool movingRight;
+
+
     string texturePath = "with_outline/IDLE.png";
+    string walkTexturePath = "with_outline/RUN.png";
 public:
     Sprite characterSprite;
     Texture charTexture;
+    Texture walkTexture;
+    int framecycle = 7;
+    bool movingLeft;
+    bool movingRight;
+
     Character() {
         //shape.setSize(sf::Vector2f(hamza2k21, height));
         //shape.setFillColor(sf::Color::Blue);
         //shape.setPosition(200.f, screenHeight-height);
         charTexture.loadFromFile(texturePath);
+        walkTexture.loadFromFile(walkTexturePath);
         characterSprite.setTexture(charTexture);
         characterSprite.setPosition(200.f, screenHeight - height);
         characterSprite.setTextureRect(IntRect(0, 0, 64, 64));
@@ -57,8 +64,11 @@ public:
 	void handleInput(String action, float dt) {
 		if (action == "left") {
             if (isMoving()) {
-				moveTimeElapsed = 0;  // Reset move time to allow immediate direction change
+				moveTimeElapsed = 0;
+                // Reset move time to allow immediate direction change
             }
+            characterSprite.setTexture(walkTexture);
+            framecycle = 8;
 			movingLeft = true;
 			movingRight = false;  // Stop moving right if currently moving
 			handleMove(dt);
@@ -67,6 +77,8 @@ public:
             if (isMoving()) {
                 moveTimeElapsed = 0;  // Reset move time to allow immediate direction change
             }
+            characterSprite.setTexture(walkTexture);
+            framecycle = 8;
 			movingRight = true;
 			movingLeft = false;  // Stop moving left if currently moving
 			handleMove(dt);
@@ -86,19 +98,28 @@ public:
 
     void handleMove(float dt) {
 		if (movingLeft) {
+            characterSprite.setScale(-3.f, 3.f);
+            characterSprite.setOrigin(100.f, 0.f);
 			move(Vector2f(-moveDistance * dt / moveDuration, 0));
 			moveTimeElapsed += dt;
 			if (moveTimeElapsed >= moveDuration) {
 				movingLeft = false;
 				moveTimeElapsed = 0;
+				framecycle = 7;
+                characterSprite.setTexture(charTexture);
 			}
 		}
 		else if (movingRight) {
+            characterSprite.setScale(3.f, 3.f);
+            characterSprite.setOrigin(0.f, 0.f);
 			move(Vector2f(moveDistance * dt / moveDuration, 0));
 			moveTimeElapsed += dt;
 			if (moveTimeElapsed >= moveDuration) {
 				movingRight = false;
 				moveTimeElapsed = 0;
+				framecycle = 7;
+                characterSprite.setTexture(charTexture);
+
 			}
 		}
     }
@@ -167,7 +188,7 @@ int main() {
         recv.poll();
 
         if (animationClock.getElapsedTime().asMilliseconds() > 100) {  // Change frame every 100ms
-            currentFrame = (currentFrame + 1) % 7;  // Cycle through 7 frames
+            currentFrame = (currentFrame + 1) % c1.framecycle;  // Cycle through 7 frames
             c1.characterSprite.setTextureRect(IntRect(currentFrame * 96, 0, 64, 64));
             animationClock.restart();
         }
@@ -177,9 +198,11 @@ int main() {
                 window.close();
 			if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Left) {
+
 					c1.handleInput("left", dt);
                 }
                 else if (event.key.code == sf::Keyboard::Right) {
+
                     c1.handleInput("right", dt);
                 }
                 else if (event.key.code == sf::Keyboard::Up) {
@@ -187,9 +210,25 @@ int main() {
                         c1.handleInput("jump", dt);
                     }
 				}
+
 			}
         }
 
+	  //       if (!command.empty()) {
+	  //           // Process the received command
+	  //           if (command == "left") {
+	  //               c1.handleInput("left", dt);
+	  //           }
+	  //           else if (command == "right") {
+	  //               c1.handleInput("right", dt);
+	  //           }
+	  //           else if (command == "jump") {
+	  //               if (!c1.isJumping()) {
+	  //                   c1.handleInput("jump", dt);
+	  //               }
+	  //           }
+	  //       }
+        }
         if (c1.isJumping()) {
 			c1.handleJump(dt);
         }
