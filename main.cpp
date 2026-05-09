@@ -108,7 +108,7 @@ int main() {
 
         if (animationClock.getElapsedTime().asMilliseconds() > 100) {  // Change frame every 100ms
             currentFrame = (currentFrame + 1) % 7;  // Cycle through 7 frames
-            c1.characterSprite.setTextureRect(IntRect(currentFrame * 96, 0, 34, 64));
+            c1.characterSprite.setTextureRect(IntRect(currentFrame * 96, 0, 64, 64));
             animationClock.restart();
         }
 
