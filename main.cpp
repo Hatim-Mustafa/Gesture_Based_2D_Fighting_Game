@@ -214,21 +214,6 @@ int main() {
 			}
         }
 
-	  //       if (!command.empty()) {
-	  //           // Process the received command
-	  //           if (command == "left") {
-	  //               c1.handleInput("left", dt);
-	  //           }
-	  //           else if (command == "right") {
-	  //               c1.handleInput("right", dt);
-	  //           }
-	  //           else if (command == "jump") {
-	  //               if (!c1.isJumping()) {
-	  //                   c1.handleInput("jump", dt);
-	  //               }
-	  //           }
-	  //       }
-        }
         if (c1.isJumping()) {
 			c1.handleJump(dt);
         }
