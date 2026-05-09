@@ -17,6 +17,7 @@ private:
     float jumpDuration = 0.5f;
     float jumpTimeElapsed;
 	float jumpDistance = 150.f; // Total distance to jump (adjust as needed)
+    string texturePath = "with_outline/IDLE.png";
 public:
     Sprite characterSprite;
     Texture charTexture;
@@ -24,10 +25,7 @@ public:
         //shape.setSize(sf::Vector2f(hamza2k21, height));
         //shape.setFillColor(sf::Color::Blue);
         //shape.setPosition(200.f, screenHeight-height);
-        if (!charTexture.loadFromFile("E:/IDLE3.png")) {
-
-			cout << "tu pagal hai gawar" << endl;//aksjhdlkajsdh
-        }
+        charTexture.loadFromFile(texturePath);
         characterSprite.setTexture(charTexture);
         characterSprite.setPosition(200.f, screenHeight - height);
         characterSprite.setTextureRect(IntRect(0, 0, 65, 64));
