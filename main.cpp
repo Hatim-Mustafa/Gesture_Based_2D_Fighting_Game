@@ -4,13 +4,20 @@
 #include <thread>
 #include <mutex>
 #include "socket_server.cpp" 
+#include "game_state_sender.cpp"
 using namespace sf;
 using namespace std;
 
-#define height 250.f
+#define height 210.f
 #define hamza2k21 60.f
 #define screenWidth 1400.f
 #define screenHeight 800.f
+#define attackState "ATTACK"
+#define idleState "IDLE"
+#define fmoveState "FORWARD"
+#define bmoveState "BACK"
+#define jumpState "JUMP"
+#define shieldState "SHIELD"
 
 //Character Class
 //He He
@@ -21,9 +28,11 @@ private:
     float jumpDuration = 0.5f;
     float jumpTimeElapsed;
 	float jumpDistance = 150.f;
-    float moveDistance = 60.f;
+    float moveDistance = 70.f;
     float moveDuration = 0.25f;
 	float moveTimeElapsed;
+    int health;
+    string state;
 
 
     string texturePath = "with_outline/IDLE.png";
@@ -52,6 +61,8 @@ public:
 		movingLeft = false;
 		movingRight = false;
 		moveTimeElapsed = 0;
+        health = 100;
+        state = idleState;
     }
     void move(const sf::Vector2f& velocity) {
 		characterSprite.move(velocity);
@@ -71,7 +82,8 @@ public:
             characterSprite.setTexture(walkTexture);
             framecycle = 8;
 			movingLeft = true;
-			movingRight = false;  // Stop moving right if currently moving
+			movingRight = false;
+            state = bmoveState;
 			handleMove(dt);
 		}
 		else if (action == "right") {
@@ -81,10 +93,12 @@ public:
             characterSprite.setTexture(walkTexture);
             framecycle = 8;
 			movingRight = true;
-			movingLeft = false;  // Stop moving left if currently moving
+			movingLeft = false;
+            state = fmoveState;
 			handleMove(dt);
 		}
 		else if (action == "jump") {
+            state = jumpState;
 			handleJump(dt);
 		}
 	}
@@ -108,6 +122,7 @@ public:
 				moveTimeElapsed = 0;
 				framecycle = 7;
                 characterSprite.setTexture(charTexture);
+                state = idleState;
 			}
 		}
 		else if (movingRight) {
@@ -120,6 +135,7 @@ public:
 				moveTimeElapsed = 0;
 				framecycle = 7;
                 characterSprite.setTexture(charTexture);
+                state = idleState;
 
 			}
 		}
@@ -135,6 +151,7 @@ public:
             else {
 				move(Vector2f(0, screenHeight - height - getPosition().y));
                 jumping = false;
+                state = idleState;
                 jumpTimeElapsed = 0;
             }
         }
@@ -156,15 +173,50 @@ public:
 		Vector2f pos = characterSprite.getPosition();
         return pos;
 	}
+
+	string getState() {
+		return state;
+	}
+
+	int getHealth() {
+		return health;
+	}
 };
 
-int main() {
-    sf::RenderWindow window(sf::VideoMode(screenWidth, screenHeight), "SFML Bouncing Ball");
+class Enemy {
+    RectangleShape shape;
+	int health;
+public:
+	Enemy() {
+		shape.setSize(sf::Vector2f(hamza2k21, height-70));
+		shape.setFillColor(sf::Color::Red);
+		shape.setPosition(1000.f, screenHeight - height+70);
+		health = 100;
+	}
 
+	void draw(sf::RenderWindow& window) {         
+        window.draw(shape);
+	}
+
+    Vector2f getPosition() {
+        Vector2f pos = shape.getPosition();
+        return pos;
+    }
+
+	int getHealth() {
+		return health; 
+	}
+};
+
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode(screenWidth, screenHeight), "Fighting Game");
+
+    Character c1;
+    Enemy e1;
     Clock clock;
 	Clock animationClock;
     int currentFrame = 0;
-    Character c1;
     float dt;
 
     auto onGesture = [&c1, &dt](int player, const string& gesture) {
@@ -181,12 +233,18 @@ int main() {
     };
 
     GestureReceiver  recv(5005, onGesture);
+    GameStateSender  stateTx("127.0.0.1", 5006);
 
 
     while (window.isOpen()) {
         Event event;
         dt = clock.restart().asSeconds();
         recv.poll();
+
+        stateTx.send(
+            { c1.getPosition().x, c1.getPosition().y, c1.getState(), c1.getHealth()},
+            { e1.getPosition().x,  e1.getPosition().y, "IDLE", e1.getHealth()}
+        );
 
         if (animationClock.getElapsedTime().asMilliseconds() > 100) {  // Change frame every 100ms
             currentFrame = (currentFrame + 1) % c1.framecycle;  // Cycle through 7 frames
@@ -230,6 +288,7 @@ int main() {
         
         window.clear(sf::Color::Black);
         c1.draw(window);
+		e1.draw(window);
         window.display();
     }
 
