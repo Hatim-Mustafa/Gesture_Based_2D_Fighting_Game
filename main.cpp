@@ -185,18 +185,134 @@ public:
 
 class Enemy {
     RectangleShape shape;
-	int health;
+    bool jumping;
+    float jumpDuration = 0.5f;
+    float jumpTimeElapsed;
+    float jumpDistance = 150.f;
+    float moveDistance = 70.f;
+    float moveDuration = 0.25f;
+    float moveTimeElapsed;
+    int health;
+
+
+    string texturePath = "with_outline/IDLE.png";
+    string walkTexturePath = "with_outline/RUN.png";
 public:
+    Sprite enemySprite;
+    Texture enemyTexture;
+    Texture walkTexture;
+    int framecycle = 7;
+    bool movingLeft;
+    bool movingRight;
+
 	Enemy() {
-		shape.setSize(sf::Vector2f(hamza2k21, height-70));
+		shape.setSize(sf::Vector2f(hamza2k21, height));
 		shape.setFillColor(sf::Color::Red);
-		shape.setPosition(1000.f, screenHeight - height+70);
-		health = 100;
+		shape.setPosition(1000.f, screenHeight - height);
+        jumping = false;
+        jumpTimeElapsed = 0;
+        movingLeft = false;
+        movingRight = false;
+        moveTimeElapsed = 0;
+        health = 100;
 	}
 
 	void draw(sf::RenderWindow& window) {         
         window.draw(shape);
 	}
+
+    void move(const sf::Vector2f& velocity) {
+        shape.move(velocity);
+    }
+
+    void handleInput(String action, float dt) {
+        if (action == "left") {
+            if (isMoving()) {
+                moveTimeElapsed = 0;
+                // Reset move time to allow immediate direction change
+            }
+            //enemySprite.setTexture(walkTexture);
+            framecycle = 8;
+            movingLeft = true;
+            movingRight = false;
+            handleMove(dt);
+        }
+        else if (action == "right") {
+            if (isMoving()) {
+                moveTimeElapsed = 0;  // Reset move time to allow immediate direction change
+            }
+            //enemySprite.setTexture(walkTexture);
+            framecycle = 8;
+            movingRight = true;
+            movingLeft = false;
+            handleMove(dt);
+        }
+        else if (action == "jump") {
+            handleJump(dt);
+        }
+    }
+
+    void handleJump(float dt) {
+        if (jumping) {
+            jumpTimeElapsed += dt;
+            if (getPosition().y < (screenHeight - height)) {
+                move(Vector2f(0, jumpDistance * dt / (jumpDuration - jumpTimeElapsed)));
+            }
+            else {
+                move(Vector2f(0, screenHeight - height - getPosition().y));
+                jumping = false;
+                jumpTimeElapsed = 0;
+            }
+        }
+        else {
+            jumpTimeElapsed += dt;
+            if (getPosition().y > (screenHeight - height - jumpDistance)) {
+                move(Vector2f(0, -jumpDistance * dt / (jumpDuration - jumpTimeElapsed)));
+            }
+            else {
+                if (jumpTimeElapsed >= jumpDuration) {
+                    jumping = true;
+                    jumpTimeElapsed = 0;
+                }
+            }
+        }
+    }
+
+    bool isJumping() {
+        return jumping;
+    }
+
+    bool isMoving() {
+        return movingLeft || movingRight;
+    }
+
+    void handleMove(float dt) {
+        if (movingLeft) {
+            //characterSprite.setScale(-3.f, 3.f);
+            //characterSprite.setOrigin(100.f, 0.f);
+            move(Vector2f(-moveDistance * dt / moveDuration, 0));
+            moveTimeElapsed += dt;
+            if (moveTimeElapsed >= moveDuration) {
+                movingLeft = false;
+                moveTimeElapsed = 0;
+                framecycle = 7;
+                //characterSprite.setTexture(charTexture);
+            }
+        }
+        else if (movingRight) {
+            //characterSprite.setScale(3.f, 3.f);
+            //characterSprite.setOrigin(0.f, 0.f);
+            move(Vector2f(moveDistance * dt / moveDuration, 0));
+            moveTimeElapsed += dt;
+            if (moveTimeElapsed >= moveDuration) {
+                movingRight = false;
+                moveTimeElapsed = 0;
+                framecycle = 7;
+                //characterSprite.setTexture(charTexture);
+
+            }
+        }
+    }
 
     Vector2f getPosition() {
         Vector2f pos = shape.getPosition();
