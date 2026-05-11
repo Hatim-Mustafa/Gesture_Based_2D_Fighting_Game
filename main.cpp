@@ -7,7 +7,7 @@
 using namespace sf;
 using namespace std;
 
-#define height 210.f
+#define height 250.f
 #define hamza2k21 60.f
 #define screenWidth 1400.f
 #define screenHeight 800.f
@@ -325,6 +325,12 @@ public:
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(screenWidth, screenHeight), "Fighting Game");
+    
+    Texture backgroundTexture;
+    Sprite backgroundSprite;
+    backgroundTexture.loadFromFile("E:/Background1.png"); 
+    backgroundSprite.setTexture(backgroundTexture);
+    backgroundSprite.setPosition(0.f, 0.f);
 
     Player c1;
     Enemy e1;
@@ -387,6 +393,7 @@ int main() {
         cout << c1.getState() << endl;
 
         window.clear(sf::Color::Black);
+        window.draw(backgroundSprite);
         c1.draw(window);
         e1.draw(window);
         window.display();
