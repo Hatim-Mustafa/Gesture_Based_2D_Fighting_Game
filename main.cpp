@@ -39,6 +39,7 @@ protected:
     bool movingRight = false;
     bool shielding = false;
     bool attacking = false;
+    bool attackdone = false;
 
 public:
     int framecycle = 7;
@@ -171,12 +172,13 @@ public:
 		attacking = true;
         state = attackState;
 		attackTimeElapsed += dt;
-        cout << "Attack Initiated\n";
         Vector2f tPos = target.getPosition();
         Vector2f myPos = getPosition();
 
         if (target.getState() != shieldState) {
-            if (abs(myPos.x - tPos.x) < 200.f && abs(myPos.y - tPos.y) < 60.f) {
+            if (abs(myPos.x - tPos.x) < 200.f && abs(myPos.y - tPos.y) < 60.f 
+                && attackTimeElapsed > attackDuration/2 && !attackdone) {
+                attackdone = true;
                 target.takeDamage(10);
                 cout << "Hit registered! Target health: " << target.getHealth() << endl;
             }
@@ -186,6 +188,7 @@ public:
             attackTimeElapsed = 0;
             state = idleState;
             attacking = false;
+            attackdone = false;
         }
     }
 };
@@ -390,7 +393,6 @@ int main() {
 		if (c1.isShielding()) c1.handleShield(dt);
 		if (c1.isAttacking()) c1.performAttack(e1, dt);
 
-        cout << c1.getState() << endl;
 
         window.clear(sf::Color::Black);
         window.draw(backgroundSprite);
