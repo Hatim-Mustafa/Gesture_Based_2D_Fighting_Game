@@ -201,6 +201,7 @@ public:
     int spriteSpeed = 100;
     int attackCount = 0;
 	int kuchtouhai = 96;
+	int currentFrame = 0;
 
     Player() {
         charTexture.loadFromFile("with_outline/IDLE.png"); 
@@ -261,6 +262,7 @@ public:
         if (!attacking) {
             frameWidth = 90;
             //kuchtouhai = 106;
+			currentFrame = 0; // Reset to first frame of attack animation
             if (attackCount == 0) {
                 framecycle = 6;
                 spriteSpeed = 100; // ms per frame for attack 1
@@ -289,6 +291,7 @@ public:
             PlayerSprite.setTexture(charTexture);
             framecycle = 7;
 			frameWidth = 64;
+			currentFrame = 0; // Reset to first frame of idle animation
 			//kuchtouhai = 96;
             spriteSpeed = 100; // ms per frame for idle
         }
@@ -327,7 +330,6 @@ int main() {
     Enemy e1;
     Clock clock;
     Clock animationClock;
-    int currentFrame = 0;
     float dt;
 
     auto onGesture = [&c1, &dt, &e1](int player, const string& gesture) {
@@ -354,8 +356,8 @@ int main() {
         );
 
         if (animationClock.getElapsedTime().asMilliseconds() > c1.spriteSpeed) { // Change frame every 100ms
-            currentFrame = (currentFrame + 1) % c1.framecycle; // Cycle through 7 frames
-            c1.PlayerSprite.setTextureRect(IntRect(currentFrame * c1.kuchtouhai, 0, c1.frameWidth, c1.frameHeight));
+            c1.currentFrame = (c1.currentFrame + 1) % c1.framecycle; // Cycle through 7 frames
+            c1.PlayerSprite.setTextureRect(IntRect(c1.currentFrame * c1.kuchtouhai, 0, c1.frameWidth, c1.frameHeight));
             animationClock.restart();
         }
 
