@@ -30,15 +30,20 @@ protected:
     float moveTimeElapsed = 0;
 	float shieldDuration = 0.5f;
 	float shieldTimeElapsed = 0;
+	float attackDuration = 0.35f;
+	float attackTimeElapsed = 0;
 
     int health = 100;
     string state = idleState;
     bool movingLeft = false;
     bool movingRight = false;
     bool shielding = false;
+    bool attacking = false;
 
 public:
     int framecycle = 7;
+	int frameWidth = 64;
+	int frameHeight = 64;
 
     virtual ~Character() {}
 
@@ -57,6 +62,10 @@ public:
     bool isShielding () {
         return shielding;
     }
+    
+	bool isAttacking() {
+		return attacking;
+	}
 
     string getState() { 
         return state; 
@@ -157,9 +166,11 @@ public:
         }
     }
 
-    void performAttack(Character& target) {
+    virtual void performAttack(Character& target, float dt) {
         shielding = false;
+		attacking = true;
         state = attackState;
+		attackTimeElapsed += dt;
         cout << "Attack Initiated\n";
         Vector2f tPos = target.getPosition();
         Vector2f myPos = getPosition();
@@ -170,7 +181,12 @@ public:
                 cout << "Hit registered! Target health: " << target.getHealth() << endl;
             }
         }
-		state = idleState;
+
+        if (attackTimeElapsed >= attackDuration) {
+            attackTimeElapsed = 0;
+            state = idleState;
+            attacking = false;
+        }
     }
 };
 
@@ -179,10 +195,19 @@ public:
     Sprite PlayerSprite;
     Texture charTexture;
     Texture walkTexture;
+	Texture attack1Texture;
+	Texture attack2Texture;
+	Texture attack3Texture;
+    int spriteSpeed = 100;
+    int attackCount = 0;
+	int kuchtouhai = 96;
 
     Player() {
         charTexture.loadFromFile("with_outline/IDLE.png"); 
         walkTexture.loadFromFile("with_outline/RUN.png");
+		attack1Texture.loadFromFile("with_outline/ATTACK 1.png");
+        attack2Texture.loadFromFile("with_outline/ATTACK 2.png");
+        attack3Texture.loadFromFile("with_outline/ATTACK 3.png");
         PlayerSprite.setTexture(charTexture);
         PlayerSprite.setPosition(200.f, screenHeight - height);
         PlayerSprite.setTextureRect(IntRect(0, 0, 64, 64));
@@ -205,14 +230,22 @@ public:
         if (movingLeft) {
             PlayerSprite.setScale(-3.f, 3.f);
             PlayerSprite.setOrigin(100.f, 0.f);
-            PlayerSprite.setTexture(walkTexture);
-            framecycle = 8;
+
+            if (!attacking) {
+                PlayerSprite.setTexture(walkTexture);
+                framecycle = 8;
+                spriteSpeed = 60; // ms per frame for running
+            }
         }
         else if (movingRight) {
             PlayerSprite.setScale(3.f, 3.f);
             PlayerSprite.setOrigin(0.f, 0.f);
-            PlayerSprite.setTexture(walkTexture);
-            framecycle = 8;
+
+            if (!attacking) {
+                PlayerSprite.setTexture(walkTexture);
+                framecycle = 8;
+                spriteSpeed = 60; // ms per frame for running
+            }
         }
 
         Character::handleMove(dt); 
@@ -220,8 +253,49 @@ public:
         if (state == idleState) {
             PlayerSprite.setTexture(charTexture);
             framecycle = 7;
+			spriteSpeed = 100; // ms per frame for idle
         }
     }
+
+	void performAttack(Character& target, float dt) override {
+        if (!attacking) {
+            frameWidth = 90;
+            //kuchtouhai = 106;
+            if (attackCount == 0) {
+                framecycle = 6;
+                spriteSpeed = 100; // ms per frame for attack 1
+                PlayerSprite.setTexture(attack1Texture);
+                attackCount++;
+
+            }
+            else if (attackCount == 1) {
+                framecycle = 5;
+                spriteSpeed = 100; // ms per frame for attack 2
+                PlayerSprite.setTexture(attack2Texture);
+                attackCount++;
+            }
+            else if (attackCount == 2) {
+                framecycle = 6;
+                spriteSpeed = 100; // ms per frame for attack 3
+                PlayerSprite.setTexture(attack3Texture);
+                attackCount = 0;
+            }
+        }
+        
+
+        Character::performAttack(target, dt);
+
+        if (state == idleState) {
+            PlayerSprite.setTexture(charTexture);
+            framecycle = 7;
+			frameWidth = 64;
+			//kuchtouhai = 96;
+            spriteSpeed = 100; // ms per frame for idle
+        }
+
+	}
+	    
+        
 };
 
 class Enemy : public Character {
@@ -261,7 +335,7 @@ int main() {
             if (gesture == "FORWARD") c1.handleInput("right", dt);
             else if (gesture == "BACK") c1.handleInput("left", dt);
             else if (gesture == "JUMP" && !c1.isJumping()) c1.handleInput("jump", dt);
-            else if (gesture == "ATTACK" && !c1.isJumping()) c1.performAttack(e1);
+            else if (gesture == "ATTACK" && !c1.isJumping()) c1.performAttack(e1,dt);
 			else if (gesture == "SHIELD") c1.handleShield(dt);
         }
         };
@@ -279,9 +353,9 @@ int main() {
             { e1.getPosition().x, e1.getPosition().y, "IDLE", e1.getHealth() }
         );
 
-        if (animationClock.getElapsedTime().asMilliseconds() > 100) { // Change frame every 100ms
+        if (animationClock.getElapsedTime().asMilliseconds() > c1.spriteSpeed) { // Change frame every 100ms
             currentFrame = (currentFrame + 1) % c1.framecycle; // Cycle through 7 frames
-            c1.PlayerSprite.setTextureRect(IntRect(currentFrame * 96, 0, 64, 64));
+            c1.PlayerSprite.setTextureRect(IntRect(currentFrame * c1.kuchtouhai, 0, c1.frameWidth, c1.frameHeight));
             animationClock.restart();
         }
 
@@ -291,7 +365,7 @@ int main() {
                 if (event.key.code == sf::Keyboard::Left) c1.handleInput("left", dt);
                 else if (event.key.code == sf::Keyboard::Right) c1.handleInput("right", dt);
                 else if (event.key.code == sf::Keyboard::Up && !c1.isJumping()) c1.handleInput("jump", dt);
-                else if (event.key.code == sf::Keyboard::Space && !c1.isJumping()) c1.performAttack(e1);
+                else if (event.key.code == sf::Keyboard::Space && !c1.isJumping()) c1.performAttack(e1, dt);
 				else if (event.key.code == sf::Keyboard::Down) c1.handleShield(dt);
             }
         }
@@ -299,6 +373,7 @@ int main() {
         if (c1.isJumping()) c1.handleJump(dt);
         if (c1.isMoving()) c1.handleMove(dt);
 		if (c1.isShielding()) c1.handleShield(dt);
+		if (c1.isAttacking()) c1.performAttack(e1, dt);
 
         cout << c1.getState() << endl;
 
