@@ -14,7 +14,7 @@ using namespace std;
 #define attackState "ATTACK"
 #define idleState "IDLE"
 #define fmoveState "FORWARD"
-#define bmoveState "BACK"
+#define bmoveState "BACKWARD"
 #define jumpState "JUMP"
 #define shieldState "SHIELD"
 
@@ -28,10 +28,10 @@ protected:
     float moveDistance = 70.f;
     float moveDuration = 0.25f;
     float moveTimeElapsed = 0;
-	float shieldDuration = 0.5f;
-	float shieldTimeElapsed = 0;
-	float attackDuration = 0.35f;
-	float attackTimeElapsed = 0;
+    float shieldDuration = 0.5f;
+    float shieldTimeElapsed = 0;
+    float attackDuration = 0.35f;
+    float attackTimeElapsed = 0;
 
     int health = 100;
     string state = idleState;
@@ -43,8 +43,8 @@ protected:
 
 public:
     int framecycle = 7;
-	int frameWidth = 64;
-	int frameHeight = 64;
+    int frameWidth = 64;
+    int frameHeight = 64;
 
     virtual ~Character() {}
 
@@ -52,28 +52,28 @@ public:
     virtual Vector2f getPosition() = 0;
     virtual void move(const sf::Vector2f& velocity) = 0;
 
-    bool isJumping() { 
-        return jumping || jumpStarted; 
+    bool isJumping() {
+        return jumping || jumpStarted;
     }
 
-    bool isMoving() { 
-        return movingLeft || movingRight; 
+    bool isMoving() {
+        return movingLeft || movingRight;
     }
 
-    bool isShielding () {
+    bool isShielding() {
         return shielding;
     }
-    
-	bool isAttacking() {
-		return attacking;
-	}
 
-    string getState() { 
-        return state; 
+    bool isAttacking() {
+        return attacking;
     }
 
-    int getHealth() { 
-        return health; 
+    string getState() {
+        return state;
+    }
+
+    int getHealth() {
+        return health;
     }
 
     void takeDamage(int damage) {
@@ -137,7 +137,9 @@ public:
 
     virtual void handleMove(float dt) {
         if (movingLeft) {
-            move(Vector2f(-moveDistance * dt / moveDuration, 0));
+            if (getPosition().x > 0) {
+                move(Vector2f(-moveDistance * dt / moveDuration, 0));
+            }
             moveTimeElapsed += dt;
             if (moveTimeElapsed >= moveDuration) {
                 movingLeft = false;
@@ -146,7 +148,9 @@ public:
             }
         }
         else if (movingRight) {
-            move(Vector2f(moveDistance * dt / moveDuration, 0));
+            if (getPosition().x < screenWidth - hamza2k21) {
+                move(Vector2f(moveDistance * dt / moveDuration, 0));
+            }
             moveTimeElapsed += dt;
             if (moveTimeElapsed >= moveDuration) {
                 movingRight = false;
@@ -157,27 +161,27 @@ public:
     }
 
     virtual void handleShield(float dt) {
-		state = shieldState;
-		shielding = true;
-		shieldTimeElapsed += dt;
+        state = shieldState;
+        shielding = true;
+        shieldTimeElapsed += dt;
         if (shieldTimeElapsed >= shieldDuration) {
             shieldTimeElapsed = 0;
             state = idleState;
-			shielding = false;
+            shielding = false;
         }
     }
 
     virtual void performAttack(Character& target, float dt) {
         shielding = false;
-		attacking = true;
+        attacking = true;
         state = attackState;
-		attackTimeElapsed += dt;
+        attackTimeElapsed += dt;
         Vector2f tPos = target.getPosition();
         Vector2f myPos = getPosition();
 
         if (target.getState() != shieldState) {
-            if (abs(myPos.x - tPos.x) < 200.f && abs(myPos.y - tPos.y) < 60.f 
-                && attackTimeElapsed > attackDuration/2 && !attackdone) {
+            if (abs(myPos.x - tPos.x) < 200.f && abs(myPos.y - tPos.y) < 60.f
+                && attackTimeElapsed > attackDuration / 2 && !attackdone) {
                 attackdone = true;
                 target.takeDamage(10);
                 cout << "Hit registered! Target health: " << target.getHealth() << endl;
@@ -198,18 +202,18 @@ public:
     Sprite PlayerSprite;
     Texture charTexture;
     Texture walkTexture;
-	Texture attack1Texture;
-	Texture attack2Texture;
-	Texture attack3Texture;
+    Texture attack1Texture;
+    Texture attack2Texture;
+    Texture attack3Texture;
     int spriteSpeed = 100;
     int attackCount = 0;
-	int kuchtouhai = 96;
-	int currentFrame = 0;
+    int kuchtouhai = 96;
+    int currentFrame = 0;
 
     Player() {
-        charTexture.loadFromFile("with_outline/IDLE.png"); 
+        charTexture.loadFromFile("with_outline/IDLE.png");
         walkTexture.loadFromFile("with_outline/RUN.png");
-		attack1Texture.loadFromFile("with_outline/ATTACK 1.png");
+        attack1Texture.loadFromFile("with_outline/ATTACK 1.png");
         attack2Texture.loadFromFile("with_outline/ATTACK 2.png");
         attack3Texture.loadFromFile("with_outline/ATTACK 3.png");
         PlayerSprite.setTexture(charTexture);
@@ -218,16 +222,16 @@ public:
         PlayerSprite.setScale(3.0f, 3.0f);
     }
 
-    void draw(sf::RenderWindow& window) override { 
-        window.draw(PlayerSprite); 
+    void draw(sf::RenderWindow& window) override {
+        window.draw(PlayerSprite);
     }
 
-    Vector2f getPosition() override { 
-        return PlayerSprite.getPosition(); 
+    Vector2f getPosition() override {
+        return PlayerSprite.getPosition();
     }
 
-    void move(const sf::Vector2f& velocity) override { 
-        PlayerSprite.move(velocity); 
+    void move(const sf::Vector2f& velocity) override {
+        PlayerSprite.move(velocity);
     }
 
     void handleMove(float dt) override {
@@ -252,20 +256,20 @@ public:
             }
         }
 
-        Character::handleMove(dt); 
+        Character::handleMove(dt);
 
         if (state == idleState) {
             PlayerSprite.setTexture(charTexture);
             framecycle = 7;
-			spriteSpeed = 100; // ms per frame for idle
+            spriteSpeed = 100; // ms per frame for idle
         }
     }
 
-	void performAttack(Character& target, float dt) override {
+    void performAttack(Character& target, float dt) override {
         if (!attacking) {
             frameWidth = 90;
             //kuchtouhai = 106;
-			currentFrame = 0; // Reset to first frame of attack animation
+            currentFrame = 0; // Reset to first frame of attack animation
             if (attackCount == 0) {
                 framecycle = 6;
                 spriteSpeed = 100; // ms per frame for attack 1
@@ -286,45 +290,127 @@ public:
                 attackCount = 0;
             }
         }
-        
+        Character::performAttack(target, dt);
+
+        if (state == idleState) {
+            PlayerSprite.setTexture(charTexture);
+            framecycle = 7;
+            frameWidth = 64;
+            currentFrame = 0; // Reset to first frame of idle animation
+            //kuchtouhai = 96;
+            spriteSpeed = 100; // ms per frame for idle
+        }
+
+    }
+
+
+};
+
+class Enemy : public Character {
+public:
+    Sprite PlayerSprite;
+    Texture charTexture;
+    Texture walkTexture;
+    Texture attack1Texture;
+    Texture attack2Texture;
+    Texture attack3Texture;
+    int spriteSpeed = 100;
+    int attackCount = 0;
+    int kuchtouhai = 96;
+    int currentFrame = 0;
+
+    Enemy() {
+        charTexture.loadFromFile("with_outline/IDLE.png");
+        walkTexture.loadFromFile("with_outline/RUN.png");
+        attack1Texture.loadFromFile("with_outline/ATTACK 1.png");
+        attack2Texture.loadFromFile("with_outline/ATTACK 2.png");
+        attack3Texture.loadFromFile("with_outline/ATTACK 3.png");
+        PlayerSprite.setTexture(charTexture);
+        PlayerSprite.setPosition(screenWidth - 300.f, screenHeight - height);
+        PlayerSprite.setTextureRect(IntRect(0, 0, 64, 64));
+        PlayerSprite.setScale(3.0f, 3.0f);
+    }
+
+    void draw(sf::RenderWindow& window) override {
+        window.draw(PlayerSprite);
+    }
+
+    Vector2f getPosition() override {
+        return PlayerSprite.getPosition();
+    }
+
+    void move(const sf::Vector2f& velocity) override {
+        PlayerSprite.move(velocity);
+    }
+
+    void handleMove(float dt) override {
+        if (movingLeft) {
+            PlayerSprite.setScale(-3.f, 3.f);
+            PlayerSprite.setOrigin(100.f, 0.f);
+
+            if (!attacking) {
+                PlayerSprite.setTexture(walkTexture);
+                framecycle = 8;
+                spriteSpeed = 60; // ms per frame for running
+            }
+        }
+        else if (movingRight) {
+            PlayerSprite.setScale(3.f, 3.f);
+            PlayerSprite.setOrigin(0.f, 0.f);
+
+            if (!attacking) {
+                PlayerSprite.setTexture(walkTexture);
+                framecycle = 8;
+                spriteSpeed = 60; // ms per frame for running
+            }
+        }
+
+        Character::handleMove(dt);
+
+        if (state == idleState) {
+            PlayerSprite.setTexture(charTexture);
+            framecycle = 7;
+            spriteSpeed = 100; // ms per frame for idle
+        }
+    }
+
+    void performAttack(Character& target, float dt) override {
+        if (!attacking) {
+            frameWidth = 90;
+            currentFrame = 0; // Reset to first frame of attack animation
+            if (attackCount == 0) {
+                framecycle = 6;
+                spriteSpeed = 100; // ms per frame for attack 1
+                PlayerSprite.setTexture(attack1Texture);
+                attackCount++;
+
+            }
+            else if (attackCount == 1) {
+                framecycle = 5;
+                spriteSpeed = 100; // ms per frame for attack 2
+                PlayerSprite.setTexture(attack2Texture);
+                attackCount++;
+            }
+            else if (attackCount == 2) {
+                framecycle = 6;
+                spriteSpeed = 100; // ms per frame for attack 3
+                PlayerSprite.setTexture(attack3Texture);
+                attackCount = 0;
+            }
+        }
 
         Character::performAttack(target, dt);
 
         if (state == idleState) {
             PlayerSprite.setTexture(charTexture);
             framecycle = 7;
-			frameWidth = 64;
-			currentFrame = 0; // Reset to first frame of idle animation
-			//kuchtouhai = 96;
+            frameWidth = 64;
+            currentFrame = 0; // Reset to first frame of idle animation
             spriteSpeed = 100; // ms per frame for idle
         }
-
-	}
-	    
-        
-};
-
-class Enemy : public Character {
-    RectangleShape shape;
-public:
-    Enemy() {
-        shape.setSize(sf::Vector2f(hamza2k21, height)); 
-        shape.setFillColor(sf::Color::Red);
-        shape.setPosition(1000.f, screenHeight - height);
-    }
-
-    void draw(sf::RenderWindow& window) override { 
-        window.draw(shape); 
-    }
-
-    Vector2f getPosition() override { 
-        return shape.getPosition(); 
-    }
-
-    void move(const sf::Vector2f& velocity) override { 
-        shape.move(velocity); 
     }
 };
+
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(screenWidth, screenHeight), "Fighting Game");
@@ -340,17 +426,17 @@ int main() {
             if (gesture == "FORWARD") c1.handleInput("right", dt);
             else if (gesture == "BACK") c1.handleInput("left", dt);
             else if (gesture == "JUMP" && !c1.isJumping()) c1.handleInput("jump", dt);
-            else if (gesture == "ATTACK" && !c1.isJumping()) c1.performAttack(e1,dt);
-			else if (gesture == "SHIELD") c1.handleShield(dt);
+            else if (gesture == "ATTACK" && !c1.isJumping()) c1.performAttack(e1, dt);
+            else if (gesture == "SHIELD") c1.handleShield(dt);
         }
         if (player == 0) {
-            if (gesture == "FORWARD") e1.handleInput("right", dt);
-            else if (gesture == "BACK") e1.handleInput("left", dt);
+            if (gesture == "FORWARD") e1.handleInput("left", dt); // changed to left toward player
+            else if (gesture == "BACKWARD") e1.handleInput("right", dt); // changed to right away from player
             else if (gesture == "JUMP" && !e1.isJumping()) e1.handleInput("jump", dt);
             else if (gesture == "ATTACK" && !e1.isJumping()) e1.performAttack(c1, dt);
             else if (gesture == "SHIELD") e1.handleShield(dt);
         }
-    };
+        };
 
     GestureReceiver recv(5005, onGesture);
     GameStateSender stateTx("127.0.0.1", 5006);
@@ -365,11 +451,14 @@ int main() {
             { e1.getPosition().x, e1.getPosition().y, "IDLE", e1.getHealth() }
         );
 
-        if (animationClock.getElapsedTime().asMilliseconds() > c1.spriteSpeed) { // Change frame every 100ms
-            c1.currentFrame = (c1.currentFrame + 1) % c1.framecycle; // Cycle through 7 frames
+        if (animationClock.getElapsedTime().asMilliseconds() > c1.spriteSpeed) {
+            c1.currentFrame = (c1.currentFrame + 1) % c1.framecycle;
             c1.PlayerSprite.setTextureRect(IntRect(c1.currentFrame * c1.kuchtouhai, 0, c1.frameWidth, c1.frameHeight));
+            e1.currentFrame = (e1.currentFrame + 1) % e1.framecycle;
+            e1.PlayerSprite.setTextureRect(IntRect(e1.currentFrame * e1.kuchtouhai, 0, e1.frameWidth, e1.frameHeight));
             animationClock.restart();
         }
+
 
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) window.close();
@@ -378,15 +467,19 @@ int main() {
                 else if (event.key.code == sf::Keyboard::Right) c1.handleInput("right", dt);
                 else if (event.key.code == sf::Keyboard::Up && !c1.isJumping()) c1.handleInput("jump", dt);
                 else if (event.key.code == sf::Keyboard::Space && !c1.isJumping()) c1.performAttack(e1, dt);
-				else if (event.key.code == sf::Keyboard::Down) c1.handleShield(dt);
+                else if (event.key.code == sf::Keyboard::Down) c1.handleShield(dt);
             }
         }
 
         if (c1.isJumping()) c1.handleJump(dt);
         if (c1.isMoving()) c1.handleMove(dt);
-		if (c1.isShielding()) c1.handleShield(dt);
-		if (c1.isAttacking()) c1.performAttack(e1, dt);
+        if (c1.isShielding()) c1.handleShield(dt);
+        if (c1.isAttacking()) c1.performAttack(e1, dt);
 
+        if (e1.isJumping()) e1.handleJump(dt);
+        if (e1.isMoving()) e1.handleMove(dt);
+        if (e1.isShielding()) e1.handleShield(dt);
+        if (e1.isAttacking()) e1.performAttack(c1, dt);
 
         window.clear(sf::Color::Black);
         c1.draw(window);
