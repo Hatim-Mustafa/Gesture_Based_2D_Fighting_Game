@@ -7,7 +7,7 @@
 using namespace sf;
 using namespace std;
 
-#define height 250.f
+#define height 305.f
 #define hamza2k21 60.f
 #define screenWidth 1400.f
 #define screenHeight 800.f
@@ -42,9 +42,9 @@ protected:
     bool attackdone = false;
 
 public:
-    int framecycle = 7;
-	int frameWidth = 64;
-	int frameHeight = 64;
+    int framecycle;
+	int frameWidth;
+	int frameHeight;
 
     virtual ~Character() {}
 
@@ -203,19 +203,22 @@ public:
 	Texture attack3Texture;
     int spriteSpeed = 100;
     int attackCount = 0;
-	int kuchtouhai = 96;
+	int kuchtouhai = 200;
 	int currentFrame = 0;
 
     Player() {
-        charTexture.loadFromFile("with_outline/IDLE.png"); 
-        walkTexture.loadFromFile("with_outline/RUN.png");
-		attack1Texture.loadFromFile("with_outline/ATTACK 1.png");
-        attack2Texture.loadFromFile("with_outline/ATTACK 2.png");
-        attack3Texture.loadFromFile("with_outline/ATTACK 3.png");
+		framecycle = 8;
+		frameWidth = 64;
+		frameHeight = 112;
+        charTexture.loadFromFile("Assets/Martial Hero/Sprites/Idle.png"); 
+        walkTexture.loadFromFile("Assets/Martial Hero/Sprites/Run.png");
+		attack1Texture.loadFromFile("Assets/Martial Hero/Sprites/Attack1.png");
+        attack2Texture.loadFromFile("Assets/Martial Hero/Sprites/Attack2.png");
+        //attack3Texture.loadFromFile("Assets/Martial Hero/Sprites/idle.png");
         PlayerSprite.setTexture(charTexture);
         PlayerSprite.setPosition(200.f, screenHeight - height);
         PlayerSprite.setTextureRect(IntRect(0, 0, 64, 64));
-        PlayerSprite.setScale(3.0f, 3.0f);
+        PlayerSprite.setScale(2.0f, 2.0f);
     }
 
     void draw(sf::RenderWindow& window) override { 
@@ -231,8 +234,9 @@ public:
     }
 
     void handleMove(float dt) override {
+		frameWidth = 84;
         if (movingLeft) {
-            PlayerSprite.setScale(-3.f, 3.f);
+            PlayerSprite.setScale(-2.f, 2.f);
             PlayerSprite.setOrigin(100.f, 0.f);
 
             if (!attacking) {
@@ -242,7 +246,7 @@ public:
             }
         }
         else if (movingRight) {
-            PlayerSprite.setScale(3.f, 3.f);
+            PlayerSprite.setScale(2.f, 2.f);
             PlayerSprite.setOrigin(0.f, 0.f);
 
             if (!attacking) {
@@ -256,35 +260,35 @@ public:
 
         if (state == idleState) {
             PlayerSprite.setTexture(charTexture);
-            framecycle = 7;
+            framecycle = 8;
 			spriteSpeed = 100; // ms per frame for idle
         }
     }
 
 	void performAttack(Character& target, float dt) override {
         if (!attacking) {
-            frameWidth = 90;
+            frameWidth = 140;
             //kuchtouhai = 106;
 			currentFrame = 0; // Reset to first frame of attack animation
             if (attackCount == 0) {
                 framecycle = 6;
-                spriteSpeed = 100; // ms per frame for attack 1
+                spriteSpeed = 70; // ms per frame for attack 1
                 PlayerSprite.setTexture(attack1Texture);
                 attackCount++;
 
             }
             else if (attackCount == 1) {
-                framecycle = 5;
-                spriteSpeed = 100; // ms per frame for attack 2
-                PlayerSprite.setTexture(attack2Texture);
-                attackCount++;
-            }
-            else if (attackCount == 2) {
                 framecycle = 6;
-                spriteSpeed = 100; // ms per frame for attack 3
-                PlayerSprite.setTexture(attack3Texture);
+                spriteSpeed = 70; // ms per frame for attack 2
+                PlayerSprite.setTexture(attack2Texture);
                 attackCount = 0;
             }
+            //else if (attackCount == 2) {
+            //    framecycle = 6;
+            //    spriteSpeed = 100; // ms per frame for attack 3
+            //    PlayerSprite.setTexture(attack3Texture);
+            //    attackCount = 0;
+            //}
         }
         
 
@@ -292,8 +296,8 @@ public:
 
         if (state == idleState) {
             PlayerSprite.setTexture(charTexture);
-            framecycle = 7;
-			frameWidth = 64;
+            framecycle = 8;
+			frameWidth = 97;
 			currentFrame = 0; // Reset to first frame of idle animation
 			//kuchtouhai = 96;
             spriteSpeed = 100; // ms per frame for idle
@@ -307,22 +311,124 @@ public:
 class Enemy : public Character {
     RectangleShape shape;
 public:
+    Sprite EnemySprite;
+    Texture EnemyIdleTexture;
+    Texture EnemyRunTexture;
+    Texture Enemyattack1Texture;
+    Texture Enemyattack2Texture;
+    Texture Enemyattack3Texture;
+    int EnemyspriteSpeed = 100;
+    int EnemyattackCount = 0;
+    int kuchtouhai = 250;
+    int EnemycurrentFrame = 0;
     Enemy() {
-        shape.setSize(sf::Vector2f(hamza2k21, height)); 
-        shape.setFillColor(sf::Color::Red);
-        shape.setPosition(1000.f, screenHeight - height);
+		framecycle = 8;
+		frameWidth = 77;
+		frameHeight = 110;
+        //shape.setSize(sf::Vector2f(hamza2k21, height)); 
+        //shape.setFillColor(sf::Color::Red);
+        //shape.setPosition(1000.f, screenHeight - height);
+        EnemyIdleTexture.loadFromFile("Assets/EVil Wizard 2/Sprites/idle.png");
+        EnemyRunTexture.loadFromFile("Assets/EVil Wizard 2/Sprites/Run.png");
+        Enemyattack1Texture.loadFromFile("Assets/EVil Wizard 2/Sprites/Attack1.png");
+        Enemyattack2Texture.loadFromFile("Assets/EVil Wizard 2/Sprites/Attack2.png");
+        EnemySprite.setTexture(EnemyIdleTexture);
+        EnemySprite.setPosition(1000.f, screenHeight - height);
+        EnemySprite.setTextureRect(IntRect(0, 0, 64, 64));
+        EnemySprite.setScale(2.0f, 2.0f);
     }
 
     void draw(sf::RenderWindow& window) override { 
-        window.draw(shape); 
+		window.draw(EnemySprite);
+        //window.draw(shape); 
     }
 
     Vector2f getPosition() override { 
-        return shape.getPosition(); 
+		return EnemySprite.getPosition();
+        //return shape.getPosition(); 
     }
 
     void move(const sf::Vector2f& velocity) override { 
-        shape.move(velocity); 
+		EnemySprite.move(velocity);
+        //shape.move(velocity); 
+    }
+
+
+    void handleMove(float dt) override {
+        frameWidth = 130;
+        frameHeight = 120;
+        if (movingLeft) {
+            EnemySprite.setScale(2.f, 2.f);
+            EnemySprite.setOrigin(0.f, 0.f);
+
+            if (!attacking) {
+                EnemySprite.setTexture(EnemyRunTexture);
+                framecycle = 8;
+                EnemyspriteSpeed = 60; // ms per frame for running
+            }
+        }
+        else if (movingRight) {
+            EnemySprite.setScale(-2.f, 2.f);
+            EnemySprite.setOrigin(100.f, 0.f);
+
+            if (!attacking) {
+                EnemySprite.setTexture(EnemyRunTexture);
+                framecycle = 8;
+                EnemyspriteSpeed = 60; // ms per frame for running
+            }
+        }
+
+        Character::handleMove(dt);
+
+        if (state == idleState) {
+            frameWidth = 77;
+            frameHeight = 110;
+            EnemySprite.setTexture(EnemyIdleTexture);
+            framecycle = 8;
+            EnemyspriteSpeed = 100; // ms per frame for idle
+        }
+    }
+
+    void performAttack(Character& target, float dt) override {
+        if (!attacking) {
+            frameWidth = 200;
+			frameHeight = 200;
+            //kuchtouhai = 106;
+            EnemycurrentFrame = 0; // Reset to first frame of attack animation
+            if (EnemyattackCount == 0) {
+                framecycle = 8;
+                EnemyspriteSpeed = 100; // ms per frame for attack 1
+                EnemySprite.setTexture(Enemyattack1Texture);
+                EnemyattackCount++;
+
+            }
+            else if (EnemyattackCount == 1) {
+                framecycle = 8;
+                EnemyspriteSpeed = 100; // ms per frame for attack 2
+                EnemySprite.setTexture(Enemyattack2Texture);
+                EnemyattackCount = 0;
+            }
+            //else if (EnemyattackCount == 2) {
+            //    framecycle = 6;
+            //    EnemyspriteSpeed = 100; // ms per frame for attack 3
+            //    EnemySprite.setTexture(Enemyattack3Texture);
+            //    EnemyattackCount = 0;
+            //}
+        }
+
+
+        Character::performAttack(target, dt);
+
+        if (state == idleState) {
+            EnemySprite.setTexture(EnemyIdleTexture);
+            framecycle = 8;
+            frameWidth = 77;
+            frameHeight = 110;
+            EnemycurrentFrame = 0; // Reset to first frame of idle animation
+            //kuchtouhai = 96;
+            EnemyspriteSpeed = 100; // ms per frame for idle
+        }
+
     }
 };
 
@@ -331,7 +437,7 @@ int main() {
     
     Texture backgroundTexture;
     Sprite backgroundSprite;
-    backgroundTexture.loadFromFile("E:/Background1.png"); 
+    backgroundTexture.loadFromFile("Assets/Background/Background2.png"); 
     backgroundSprite.setTexture(backgroundTexture);
     backgroundSprite.setPosition(0.f, 0.f);
 
@@ -374,8 +480,18 @@ int main() {
         if (animationClock.getElapsedTime().asMilliseconds() > c1.spriteSpeed) { // Change frame every 100ms
             c1.currentFrame = (c1.currentFrame + 1) % c1.framecycle; // Cycle through 7 frames
             c1.PlayerSprite.setTextureRect(IntRect(c1.currentFrame * c1.kuchtouhai, 0, c1.frameWidth, c1.frameHeight));
+            
+            e1.EnemycurrentFrame = (e1.EnemycurrentFrame + 1) % e1.framecycle; // Cycle through n frames
+            e1.EnemySprite.setTextureRect(IntRect(e1.EnemycurrentFrame * e1.kuchtouhai, 0, e1.frameWidth, e1.frameHeight));
             animationClock.restart();
         }
+        
+        //if (animationClock.getElapsedTime().asMilliseconds() > e1.EnemyspriteSpeed) { // Change frame every n ms
+        //    e1.EnemycurrentFrame = (e1.EnemycurrentFrame + 1) % e1.framecycle; // Cycle through n frames
+        //    e1.EnemySprite.setTextureRect(IntRect(e1.EnemycurrentFrame * e1.kuchtouhai, 0, e1.frameWidth, e1.frameHeight));
+        //    animationClock.restart();
+        //}
+
 
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) window.close();
@@ -392,6 +508,11 @@ int main() {
         if (c1.isMoving()) c1.handleMove(dt);
 		if (c1.isShielding()) c1.handleShield(dt);
 		if (c1.isAttacking()) c1.performAttack(e1, dt);
+
+        if (e1.isJumping()) e1.handleJump(dt);
+        if (e1.isMoving()) e1.handleMove(dt);
+        if (e1.isShielding()) e1.handleShield(dt);
+        if (e1.isAttacking()) e1.performAttack(e1, dt);
 
 
         window.clear(sf::Color::Black);
