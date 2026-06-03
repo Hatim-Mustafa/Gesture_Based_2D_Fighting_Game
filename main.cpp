@@ -487,14 +487,14 @@ int main() {
     auto onGesture = [&c1, &dt, &e1](int player, const string& gesture) {
         if (player == 1) {
             if (gesture == "FORWARD") c1.handleInput("right", dt);
-            else if (gesture == "BACKWARD") c1.handleInput("left", dt);
+            else if (gesture == "BACK") c1.handleInput("left", dt);
             else if (gesture == "JUMP" && !c1.isJumping()) c1.handleInput("jump", dt);
             else if (gesture == "ATTACK" && !c1.isJumping()) c1.performAttack(e1, dt);
             else if (gesture == "SHIELD") c1.handleShield(dt);
         }
         if (player == 0) {
             if (gesture == "FORWARD") e1.handleInput("right", dt);
-            else if (gesture == "BACKWARD") e1.handleInput("left", dt);
+            else if (gesture == "BACK") e1.handleInput("left", dt);
             else if (gesture == "JUMP" && !e1.isJumping()) e1.handleInput("jump", dt);
             else if (gesture == "ATTACK" && !e1.isJumping()) e1.performAttack(c1, dt);
             else if (gesture == "SHIELD") e1.handleShield(dt);
