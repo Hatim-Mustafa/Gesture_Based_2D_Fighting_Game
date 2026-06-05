@@ -36,7 +36,7 @@ protected:
     float attackDuration = 0.35f;
     float attackTimeElapsed = 0;
 
-    int health = 100;
+    int health = 100;q
     string state = idleState;
     bool movingLeft = false;
     bool movingRight = false;
@@ -468,9 +468,16 @@ int main() {
 
 	Texture GameOverTexture;
 	Sprite GameOverSprite;
-	GameOverTexture.loadFromFile("Assets/Background/GameOver.png");
+	GameOverTexture.loadFromFile("Assets/Background/GameOverr.png");
     GameOverSprite.setTexture(GameOverTexture);
-	GameOverSprite.setPosition(400.f, 200.f);
+    GameOverSprite.setPosition(100.f, 100.f);
+    GameOverSprite.setScale(1.f, 1.f);
+    Texture GameWinTexture;
+    Sprite GameWinSprite;
+    GameWinTexture.loadFromFile("Assets/Background/GameWin.png");
+    GameWinSprite.setTexture(GameWinTexture);
+    GameWinSprite.setPosition(400.f, 220.f);
+    GameWinSprite.setScale(1.f, 1.f);
 
     Texture backgroundTexture;
     Sprite backgroundSprite;
@@ -554,14 +561,19 @@ int main() {
         box1.setSize(Vector2f(healthW * (c1.getHealth() / 100.f), healthH));
         box2.setSize(Vector2f(healthW * (e1.getHealth() / 100.f), healthH));
 
-		if (e1.getHealth() <= 0 || c1.getHealth() <= 0) {
-			GameOverSprite.setPosition(475.f, 300.f);
-			GameOverSprite.setScale(0.25f, 0.25f);
+		if (c1.getHealth() <= 0) {
 			window.clear(sf::Color::Black);
 			window.draw(GameOverSprite);
 			window.display();
 			continue;
 		}
+
+        if (e1.getHealth() <= 0) {
+            window.clear(sf::Color::Black);
+            window.draw(GameWinSprite);
+            window.display();
+            continue;
+        }
 
         window.clear(sf::Color::Black);
         window.draw(backgroundSprite);
