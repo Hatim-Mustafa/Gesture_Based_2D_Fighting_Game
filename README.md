@@ -1,4 +1,4 @@
-# Gesture Based Fighting Game
+# Motion Brawl
 
 A small, gesture-driven 2D fighting game written in C++ using SFML. The project demonstrates gesture recognition for player input, sprite-based characters, simple networking for game-state transmission, and a Visual Studio solution for building on Windows.
 
